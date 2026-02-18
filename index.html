@@ -189,6 +189,16 @@
         <div class="deck-info"><p class="deck-title">Leads <span id="targetLeads" class="target-pill"></span></p></div>
         <div class="input-field"><input type="text" id="leads" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"></div>
       </div>
+      <div class="deck-item">
+        <div class="deck-info"><p class="deck-title">Conv. Target <span id="targetConvRate" class="target-pill"></span></p></div>
+        <div class="input-field"><input type="text" id="convTargetInput" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()"><span class="unit">%</span></div>
+      </div>
+      <div class="deck-item" style="opacity: 0.8;">
+        <div class="deck-info">
+          <p class="deck-title">Lead Conv. Rate <span id="leadStatusPill" class="target-pill" style="display: none; border-radius: 20px;"></span></p>
+        </div>
+        <div class="auto-result" id="leadConvDisplay">0%</div>
+      </div>
     </div>
 
     <div class="section-group">
@@ -237,7 +247,7 @@
         </select>
       </div>
       <div class="deck-item">
-        <div class="deck-info"><p class="deck-title">Opt. Target</p></div>
+        <div class="deck-info"><p class="deck-title">Global Opt. Target</p></div>
         <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
       </div>
       <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
@@ -310,7 +320,7 @@ function initCharts() {
           font: font, 
           formatter: (v, ctx) => { 
             const d = ctx.chart.data.datasets[0].data;
-            if (d[0] === 0) return ''; // Label tidak muncul jika Leads masih kosong
+            if (d[0] === 0) return ''; 
             if (ctx.dataIndex === 0) return '100%'; 
             return ((v/d[0])*100).toFixed(1)+'%'; 
           } 
@@ -337,7 +347,7 @@ function initCharts() {
           formatter: (v, ctx) => { 
             const d = ctx.chart.data.datasets[0].data; 
             if(ctx.dataIndex === 0) return 'BASE'; 
-            if(d[0] === 0 || v === 0) return ''; // Sembunyikan jika data belum ada
+            if(d[0] === 0 || v === 0) return ''; 
             const growth = (((v/d[0])-1)*100).toFixed(1);
             return `TARGET (+${growth}%)`; 
           } 
@@ -384,29 +394,62 @@ function updateTargetPill(id, value, isVisible, prefix = "", suffix = "") {
 
 function calculate() {
   const leads = cleanNumber(document.getElementById('leads').value);
+  const convTarget = cleanNumber(document.getElementById('convTargetInput').value); 
   const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
   const retention = cleanNumber(document.getElementById('retentionCust').value);
   const basket = cleanNumber(document.getElementById('basketSize').value);
   const avgTx = cleanNumber(document.getElementById('avgTx').value);
   const opt = cleanNumber(document.getElementById('optPercent').value);
 
+  // Global Factor (Jika Opt % diisi)
   const factor = 1 + (opt/100);
-  const newCust = Math.max(0, totalCust - retention);
+  
+  // LOGIKA PROYEKSI TERINTEGRASI
+  const projLeads = leads * factor;
+  const projConvTarget = convTarget * factor; // Conv rate juga naik sesuai target optimasi
+  const projectedTotalCust = (opt > 0 && convTarget > 0) ? (projLeads * (projConvTarget / 100)) : totalCust;
+  
   const currentRev = totalCust * avgTx * basket;
-  const optRev = (totalCust * factor) * (avgTx * factor) * (basket * factor);
+  const optRev = projectedTotalCust * (avgTx * factor) * (basket * factor);
 
+  // Status Conv Rate Saat Ini
+  const currentLeadConvRate = leads > 0 ? (totalCust / leads) * 100 : 0;
+  const leadConvDisplay = document.getElementById('leadConvDisplay');
+  const leadStatusPill = document.getElementById('leadStatusPill');
+  leadConvDisplay.textContent = currentLeadConvRate.toFixed(1) + '%';
+
+  if (leads > 0) {
+    leadStatusPill.style.display = "inline-block";
+    if (currentLeadConvRate >= convTarget && convTarget > 0) {
+      leadStatusPill.textContent = `TERCAPAI (${convTarget}%)`;
+      leadStatusPill.style.color = "#27ae60"; 
+      leadStatusPill.style.background = "rgba(39, 174, 96, 0.1)";
+      leadStatusPill.style.borderColor = "#27ae60";
+      leadConvDisplay.style.color = "#27ae60";
+    } else {
+      leadStatusPill.textContent = convTarget > 0 ? "BELUM TERCAPAI" : "SET TARGET";
+      leadStatusPill.style.color = "var(--primary)"; 
+      leadStatusPill.style.background = "var(--pill-bg)";
+      leadStatusPill.style.borderColor = "var(--primary)";
+      leadConvDisplay.style.color = "var(--text)";
+    }
+  } else {
+    leadStatusPill.style.display = "none";
+  }
+
+  // Update UI & Target Pills
   document.getElementById('totalRevenue').textContent = fmtCurrency(currentRev);
   document.getElementById('projectedRevenueDisplay').textContent = fmtCurrency(optRev);
+  
+  const newCust = Math.max(0, totalCust - retention);
   document.getElementById('newCustDisplay').textContent = Math.round(newCust).toLocaleString('id-ID');
-  document.getElementById('convRateDisplay').textContent = (leads > 0 ? (newCust/leads)*100 : 0).toFixed(1) + '%';
-  document.getElementById('growthHeader').textContent = opt > 0 ? `Revenue Growth (+${opt}%)` : "Revenue Growth Strategy";
-
+  document.getElementById('convRateDisplay').textContent = currentLeadConvRate.toFixed(1) + '%';
+  
   const show = opt > 0;
-  updateTargetPill('targetLeads', leads * factor, show);
-  updateTargetPill('targetTotalCust', totalCust * factor, show);
-  updateTargetPill('targetRetention', retention * factor, show);
-  updateTargetPill('targetNewCust', Math.max(0, (totalCust * factor) - (retention * factor)), show);
-  updateTargetPill('targetConv', (leads * factor > 0 ? ((totalCust*factor - retention*factor)/(leads*factor))*100 : 0), show, "", "%");
+  // Menampilkan proyeksi jika Global Opt. Target > 0
+  updateTargetPill('targetLeads', projLeads, show); 
+  updateTargetPill('targetConvRate', projConvTarget, show, "", "%");
+  updateTargetPill('targetTotalCust', projectedTotalCust, show);
   updateTargetPill('targetBasket', basket * factor, show, "Rp ");
   updateTargetPill('targetTx', avgTx * factor, show, "", "x");
 
@@ -417,37 +460,37 @@ function calculate() {
 function exportToExcel() {
   const m = document.getElementById('repMonth').selectedOptions[0].text;
   const y = document.getElementById('repYear').value;
-  const projM = document.getElementById('projMonth').selectedOptions[0].text;
   
   const leads = cleanNumber(document.getElementById('leads').value);
+  const convTarget = cleanNumber(document.getElementById('convTargetInput').value);
   const totalCust = cleanNumber(document.getElementById('totalCustInput').value);
-  const retention = cleanNumber(document.getElementById('retentionCust').value);
   const basket = cleanNumber(document.getElementById('basketSize').value);
   const tx = cleanNumber(document.getElementById('avgTx').value);
   const opt = cleanNumber(document.getElementById('optPercent').value);
   const factor = 1 + (opt / 100);
 
+  const projLeads = leads * factor;
+  const projConv = convTarget * factor;
+  const projCust = (opt > 0 && convTarget > 0) ? (projLeads * (projConv / 100)) : totalCust;
+
   const data = [
-    ["TAOBUN STRATEGY REPORT", "", "", ""],
+    ["TAOBUN GROWTH STRATEGY", "", "", ""],
     ["Bulan Laporan:", `${m} ${y}`, "", ""],
-    ["Proyeksi Target:", projM, "", ""],
-    ["Dicetak pada:", new Date().toLocaleString("id-ID"), "", ""],
     ["", "", "", ""],
-    ["METRIK BISNIS", "SAAT INI", "PROYEKSI ("+opt+"%)", "KENAIKAN"],
-    ["Leads", leads, leads * factor, leads * (factor - 1)],
-    ["Total Customers", totalCust, totalCust * factor, totalCust * (factor - 1)],
-    ["- Retention", retention, retention * factor, ""],
-    ["- New Customers", Math.max(0, totalCust - retention), Math.max(0, (totalCust*factor)-(retention*factor)), ""],
-    ["Basket Size", fmtCurrency(basket), fmtCurrency(basket * factor), ""],
-    ["Avg. Transaction", tx + " x", (tx * factor).toFixed(1) + " x", ""],
+    ["METRIK", "CURRENT", "PROJECTED (+"+opt+"%)", "GROWTH RATE"],
+    ["Leads", leads, projLeads.toFixed(0), "+"+opt+"%"],
+    ["Conv. Rate", convTarget + "%", projConv.toFixed(1) + "%", "+"+opt+"%"],
+    ["Total Customers", totalCust, projCust.toFixed(0), (projCust/totalCust*100-100).toFixed(1) + "%"],
+    ["Basket Size", fmtCurrency(basket), fmtCurrency(basket * factor), "+"+opt+"%"],
+    ["Avg. Transaction", tx + " x", (tx * factor).toFixed(1) + " x", "+"+opt+"%"],
     ["", "", "", ""],
-    ["TOTAL REVENUE", fmtCurrency(totalCust*tx*basket), fmtCurrency((totalCust*factor)*(tx*factor)*(basket*factor)), "+"+((((totalCust*factor)*(tx*factor)*(basket*factor))/(totalCust*tx*basket)-1)*100 || 0).toFixed(1)+"%"],
+    ["TOTAL REVENUE", fmtCurrency(totalCust*tx*basket), fmtCurrency(projCust * (tx*factor) * (basket*factor)), "+"+(( (projCust * (tx*factor) * (basket*factor)) / (totalCust*tx*basket) - 1 ) * 100 || 0).toFixed(1)+"%"],
   ];
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws['!cols'] = [{wch: 30}, {wch: 20}, {wch: 25}, {wch: 15}];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Report");
-  XLSX.writeFile(wb, `Taobun_Report_${m}_${y}.xlsx`);
+  XLSX.utils.book_append_sheet(wb, ws, "Strategy");
+  XLSX.writeFile(wb, `Taobun_Growth_${m}_${y}.xlsx`);
 }
 
 window.onload = () => { populateDates(); initCharts(); calculate(); };
