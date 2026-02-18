@@ -147,7 +147,7 @@
 
   .charts-grid { display: flex; flex-direction: column; gap: 50px; border-top: 1px solid var(--border); padding-top: 40px; padding-bottom: 60px; }
   .chart-header { font-size: 12px; text-transform: uppercase; color: var(--text); text-align: center; font-weight: 800; margin-bottom: 25px; }
-  .chart-container { height: 200px; position: relative; }
+  .chart-container { height: 250px; position: relative; }
 
   @media (max-width: 768px) { h1 { font-size: 28px; } .revenue-value { font-size: 36px; } }
 </style>
@@ -165,7 +165,7 @@
   </header>
 
   <div class="revenue-section">
-    <p class="revenue-label">Projected Revenue</p>
+    <p class="revenue-label">Revenue</p>
     <div class="revenue-value" id="totalRevenue">Rp 0</div>
   </div>
 
@@ -240,6 +240,10 @@
         <div class="deck-info"><p class="deck-title">Opt. Target</p></div>
         <div class="input-field"><input type="text" id="optPercent" value="0" inputmode="decimal" oninput="handleInput(this)" onfocus="this.select()" style="color: var(--primary);"><span class="unit" style="color: var(--primary);">%</span></div>
       </div>
+      <div class="deck-item" style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 15px;">
+        <div class="deck-info"><p class="deck-title" style="color: var(--primary);">Projected Revenue</p></div>
+        <div class="auto-result" id="projectedRevenueDisplay">Rp 0</div>
+      </div>
     </div>
   </div>
 
@@ -257,7 +261,6 @@ let funnelChart, growthChart;
 
 function populateDates() {
   const yearSel = document.getElementById('repYear');
-  // Hanya tahun (dimulai dari 2026 sesuai permintaan sebelumnya)
   const startYear = 2026;
   for(let i=startYear; i<=startYear+10; i++) {
     let opt = document.createElement('option');
@@ -288,18 +291,60 @@ function updateChartsTheme(theme) {
 
 function initCharts() {
   const color = document.body.getAttribute('data-theme') === 'dark' ? '#e8e8f0' : '#1a1a1a';
-  const font = { family: 'Denton Variable', size: 11, weight: '700' };
+  const font = { family: 'Denton Variable', size: 10, weight: '800' };
 
   funnelChart = new Chart(document.getElementById('funnelChart'), {
     type: 'bar',
     data: { labels: ['Leads', 'Total Cust', 'Transactions'], datasets: [{ data: [0,0,0], backgroundColor: [document.body.getAttribute('data-theme') === 'dark' ? '#1a1a26' : '#f4f4f4', '#d61e30', '#1a1a1a'], borderRadius: 4, barThickness: 25 }] },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { anchor: 'end', align: 'right', color: color, font: {weight:'800', size:10}, formatter: (v, ctx) => { const d = ctx.chart.data.datasets[0].data; return d[0] === 0 ? '0%' : ((v/d[0])*100).toFixed(1)+'%'; } } }, scales: { x: {display: false}, y: {ticks: {font, color}, grid: {display: false}} } }
+    options: { 
+      indexAxis: 'y', 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      layout: { padding: { right: 40 } },
+      plugins: { 
+        legend: {display: false}, 
+        datalabels: { 
+          anchor: 'end', 
+          align: 'right', 
+          color: color, 
+          font: font, 
+          formatter: (v, ctx) => { 
+            const d = ctx.chart.data.datasets[0].data;
+            if (d[0] === 0) return ''; // Label tidak muncul jika Leads masih kosong
+            if (ctx.dataIndex === 0) return '100%'; 
+            return ((v/d[0])*100).toFixed(1)+'%'; 
+          } 
+        } 
+      }, 
+      scales: { x: {display: false}, y: {ticks: {font: {family: 'Denton Variable', size: 11, weight: '700'}, color}, grid: {display: false}} } 
+    }
   });
 
   growthChart = new Chart(document.getElementById('growthChart'), {
     type: 'bar',
     data: { labels: ['Current', 'Optimized'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a1a', '#d61e30'], borderRadius: 6, barThickness: 50 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { anchor: 'end', align: 'top', color: color, font: {weight:'800', size:10}, formatter: (v, ctx) => { const d = ctx.chart.data.datasets[0].data; if(ctx.dataIndex===0 || d[0]===0) return 'BASE'; return '+'+(((v/d[0])-1)*100).toFixed(1)+'%'; } } }, scales: { y: {display: false}, x: {ticks: {font, color}, grid: {display: false}} } }
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      layout: { padding: { top: 30 } },
+      plugins: { 
+        legend: {display: false}, 
+        datalabels: { 
+          anchor: 'end', 
+          align: 'top', 
+          color: color, 
+          font: font, 
+          formatter: (v, ctx) => { 
+            const d = ctx.chart.data.datasets[0].data; 
+            if(ctx.dataIndex === 0) return 'BASE'; 
+            if(d[0] === 0 || v === 0) return ''; // Sembunyikan jika data belum ada
+            const growth = (((v/d[0])-1)*100).toFixed(1);
+            return `TARGET (+${growth}%)`; 
+          } 
+        } 
+      }, 
+      scales: { y: {display: false}, x: {ticks: {font: {family: 'Denton Variable', size: 11, weight: '700'}, color}, grid: {display: false}} } 
+    }
   });
 }
 
@@ -351,6 +396,7 @@ function calculate() {
   const optRev = (totalCust * factor) * (avgTx * factor) * (basket * factor);
 
   document.getElementById('totalRevenue').textContent = fmtCurrency(currentRev);
+  document.getElementById('projectedRevenueDisplay').textContent = fmtCurrency(optRev);
   document.getElementById('newCustDisplay').textContent = Math.round(newCust).toLocaleString('id-ID');
   document.getElementById('convRateDisplay').textContent = (leads > 0 ? (newCust/leads)*100 : 0).toFixed(1) + '%';
   document.getElementById('growthHeader').textContent = opt > 0 ? `Revenue Growth (+${opt}%)` : "Revenue Growth Strategy";
@@ -364,8 +410,8 @@ function calculate() {
   updateTargetPill('targetBasket', basket * factor, show, "Rp ");
   updateTargetPill('targetTx', avgTx * factor, show, "", "x");
 
-  if(funnelChart) { funnelChart.data.datasets[0].data = [leads, totalCust, totalCust * avgTx]; funnelChart.update('none'); }
-  if(growthChart) { growthChart.data.datasets[0].data = [currentRev, opt > 0 ? optRev : 0]; growthChart.update('none'); }
+  if(funnelChart) { funnelChart.data.datasets[0].data = [leads, totalCust, totalCust * avgTx]; funnelChart.update(); }
+  if(growthChart) { growthChart.data.datasets[0].data = [currentRev, optRev]; growthChart.update(); }
 }
 
 function exportToExcel() {
