@@ -66,11 +66,7 @@
     to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
-  header.main-header { 
-    margin-bottom: 30px; position: relative; padding-top: 50px; text-align: center;
-    display: flex; flex-direction: column; align-items: center;
-  }
-
+  header.main-header { margin-bottom: 30px; position: relative; padding-top: 50px; text-align: center; display: flex; flex-direction: column; align-items: center; }
   .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   .dashboard-title { font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--text); }
   .dashboard-title span { color: var(--primary); }
@@ -90,19 +86,10 @@
   .menu-card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 20px; transition: var(--transition-smooth); box-shadow: var(--shadow); }
   .menu-card:hover { transform: translateY(-5px); border-color: var(--primary); }
   
-  /* --- COMING SOON - DISABLED STYLE --- */
-  .menu-card.disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
-    filter: grayscale(1); 
-    border-style: dashed; 
-    background: #ebebeb;
-    transform: none !important; /* Hapus efek pop up */
-    box-shadow: none !important; /* Hapus shadow saat hover */
-    pointer-events: none;
-  }
-  [data-theme="dark"] .menu-card.disabled { background: #252525; }
-
+  /* Style for Disabled Menu Card */
+  .menu-card.disabled { cursor: not-allowed; opacity: 0.7; filter: grayscale(1); }
+  .menu-card.disabled:hover { transform: none; border-color: var(--border); }
+  
   .menu-icon { background: var(--primary-light); color: var(--primary); width: 54px; height: 54px; border-radius: 18px; display: flex; align-items: center; justify-content: center; }
   .menu-icon svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2; }
   .menu-card h3 { font-size: 17px; font-weight: 700; }
@@ -148,6 +135,14 @@
   .chart-box { background: var(--card); border-radius: var(--radius); padding: 24px; margin-top: 24px; border: 1px solid var(--border); box-shadow: var(--shadow); }
   .chart-title { font-size: 12px; font-weight: 800; text-align: center; margin-bottom: 20px; text-transform: uppercase; color: var(--muted); }
   .chart-container { height: 260px; position: relative; }
+
+  .leads-results-container { background: var(--text); color: white; border-radius: var(--radius); padding: 24px; margin-top: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+  .funnel-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+  .funnel-item:last-child { border-bottom: none; }
+  .funnel-item span { font-size: 13px; font-weight: 600; }
+  .result-val { font-size: 16px; font-weight: 800; color: var(--primary); }
+  .overall-row { text-align: center; padding-top: 20px; border-top: 2px dashed rgba(255,255,255,0.1); margin-top: 10px; }
+  [data-theme="dark"] .leads-results-container { background: #000; }
 </style>
 </head>
 <body data-theme="light">
@@ -169,9 +164,12 @@
         <div class="menu-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
         <div class="menu-info"><h3>Revenue Dashboard</h3></div>
       </div>
-      
+      <div class="menu-card" onclick="showView('leads-view')">
+        <div class="menu-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
+        <div class="menu-info"><h3>Lead Management</h3></div>
+      </div>
       <div class="menu-card disabled">
-        <div class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+        <div class="menu-icon" style="background: var(--border); color: var(--muted);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
         <div class="menu-info"><h3>Coming Soon</h3></div>
       </div>
     </div>
@@ -180,7 +178,7 @@
   <div id="revenue-view" class="view-container">
     <div class="dashboard-header">
         <div class="dashboard-title"><span>TAOBUN</span> Management Suite</div>
-        <button class="theme-toggle" onclick="toggleTheme()">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
             <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
@@ -216,53 +214,63 @@
 
     <div class="section-group">
       <span class="section-label">Market Performance</span>
-      <div class="deck-item"><div class="deck-title">Potential Leads</div><div class="input-wrapper"><input type="text" id="leads" class="nav-input" value="0" oninput="handleInput(this)"></div></div>
-      <div class="deck-item"><div class="deck-title">Target Rate</div><div class="input-wrapper"><input type="text" id="convTargetInput" class="nav-input" value="0" oninput="handleInput(this)"><span class="unit">%</span></div></div>
-      <div class="deck-item"><div class="deck-title">Active Customers</div><div class="input-wrapper"><input type="text" id="totalCustInput" class="nav-input" value="0" oninput="handleInput(this)" style="color: var(--primary);"></div></div>
+      <div class="deck-item"><div class="deck-title">Potential Leads</div><div class="input-wrapper"><input type="text" id="leads" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">Target Rate</div><div class="input-wrapper"><input type="text" id="convTargetInput" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"><span class="unit">%</span></div></div>
+      <div class="deck-item"><div class="deck-title">Active Customers</div><div class="input-wrapper"><input type="text" id="totalCustInput" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)" style="color: var(--primary);"></div></div>
       <div class="deck-item"><div class="deck-title" style="color: var(--muted); font-size: 12px;">↳ Actual Conv.</div><div class="auto-val" id="actualConvDisplay" style="font-size: 14px;">0%</div></div>
       <div class="deck-item">
         <div class="deck-title" style="color: var(--muted); font-size: 12px;">↳ New / Retained</div>
-        <div class="input-wrapper">
-          <span id="newCustDisplay" style="font-weight:800; font-size:14px; margin-right:8px;">0</span><span class="unit">/</span>
-          <input type="text" id="retentionCust" class="nav-input" value="0" oninput="handleInput(this)" style="width: 75px; font-size: 14px; padding: 4px 8px;">
-        </div>
+        <div class="input-wrapper"><span id="newCustDisplay" style="font-weight:800; font-size:14px; margin-right:8px;">0</span><span class="unit">/</span><input type="text" id="retentionCust" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)" style="width: 75px; font-size: 14px;"></div>
       </div>
     </div>
 
     <div class="section-group">
       <span class="section-label">Average Values</span>
-      <div class="deck-item"><div class="deck-title">Basket Size</div><div class="input-wrapper"><span class="unit">Rp</span><input type="text" id="basketSize" class="nav-input" value="0" oninput="handleInput(this)"></div></div>
-      <div class="deck-item"><div class="deck-title">Avg Tx / Month</div><div class="input-wrapper"><input type="text" id="avgTx" class="nav-input" value="0" oninput="handleInput(this)"><span class="unit">x</span></div></div>
+      <div class="deck-item"><div class="deck-title">Basket Size</div><div class="input-wrapper"><span class="unit">Rp</span><input type="text" id="basketSize" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">Avg Tx / Month</div><div class="input-wrapper"><input type="text" id="avgTx" class="nav-input" value="0" oninput="handleInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"><span class="unit">x</span></div></div>
     </div>
 
     <div class="section-group" style="background: linear-gradient(145deg, var(--card), var(--bg)); border-top: 3px solid var(--primary);">
       <span class="section-label">Strategic Simulation</span>
-      <div class="deck-item">
-        <div class="deck-title">Growth Ambition</div>
-        <div class="input-wrapper"><input type="text" id="optPercent" class="nav-input" value="0" oninput="syncSlider(this.value)" style="background: var(--primary-light); color: var(--primary);"><span class="unit">%</span></div>
-      </div>
+      <div class="deck-item"><div class="deck-title">Growth Ambition</div><div class="input-wrapper"><input type="text" id="optPercent" class="nav-input" value="0" oninput="syncSlider(this.value)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)" style="color: var(--primary);"><span class="unit">%</span></div></div>
       <div class="slider-container"><input type="range" id="growthSlider" min="0" max="100" value="0" oninput="syncInput(this.value)"></div>
-      <div class="deck-item" style="margin-top:10px">
-        <div class="deck-title">Projected Revenue</div><div class="auto-val" id="projectedRevenueDisplay" style="font-size: 22px;">Rp 0</div>
-      </div>
+      <div class="deck-item" style="margin-top:10px"><div class="deck-title">Projected Revenue</div><div class="auto-val" id="projectedRevenueDisplay" style="font-size: 22px;">Rp 0</div></div>
     </div>
 
     <button class="reset-btn" onclick="resetMetrics()">Reset Field Data</button>
-    
     <div class="btn-group">
         <button class="import-btn" onclick="document.getElementById('fileInput').click()">Import Data</button>
         <button class="export-btn" onclick="exportToExcel()">Export Report</button>
     </div>
     <input type="file" id="fileInput" style="display:none" accept=".xlsx" onchange="importFromExcel(this)">
 
-    <div class="chart-box">
-      <p class="chart-title">Customer Funnel Analysis</p>
-      <div class="chart-container"><canvas id="funnelChart"></canvas></div>
+    <div class="chart-box"><p class="chart-title">Customer Funnel Analysis</p><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
+    <div class="chart-box"><p class="chart-title">Revenue Target Comparison</p><div class="chart-container"><canvas id="growthChart"></canvas></div></div>
+  </div>
+
+  <div id="leads-view" class="view-container">
+    <div class="dashboard-header">
+        <div class="dashboard-title"><span>LEAD</span> Conversion Analysis</div>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme">
+            <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+    </div>
+    <button class="back-btn" onclick="showView('home-view')">← Back to Suite</button>
+
+    <div class="section-group">
+      <span class="section-label">Funnel Metrics</span>
+      <div class="deck-item"><div class="deck-title">Reach / Impressions</div><div class="input-wrapper"><input type="text" id="reach" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">Profile Visits</div><div class="input-wrapper"><input type="text" id="visits" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">External Link Clicks</div><div class="input-wrapper"><input type="text" id="links" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">ESB Order Clicks</div><div class="input-wrapper"><input type="text" id="orders" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
+      <div class="deck-item"><div class="deck-title">Success Payments</div><div class="input-wrapper"><input type="text" id="payments" class="nav-input lead-field" value="0" oninput="handleLeadInput(this)" onfocus="clearIfZero(this)" onblur="restoreIfEmpty(this)"></div></div>
     </div>
 
-    <div class="chart-box">
-      <p class="chart-title">Revenue Target Comparison</p>
-      <div class="chart-container"><canvas id="growthChart"></canvas></div>
+    <button class="reset-btn" onclick="resetLeadMetrics()">Reset Funnel Data</button>
+
+    <div class="leads-results-container" id="leads-results">
+        <p style="text-align: center; color: var(--muted);">Lengkapi data di atas.</p>
     </div>
   </div>
 </div>
@@ -271,6 +279,43 @@
 Chart.register(ChartDataLabels);
 let funnelChart, growthChart;
 let currentMonth = "02", currentYear = "2026";
+
+function formatNumber(val) {
+  let clean = val.toString().replace(/[^0-9]/g, "");
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+function cleanNumber(val) { return parseFloat(val.toString().replace(/\./g, "")) || 0; }
+function formatShortNumber(num) {
+  if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'M';
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'Jt';
+  return num.toLocaleString('id-ID');
+}
+
+function clearIfZero(el) {
+  if (el.value === "0") {
+    el.value = "";
+  }
+}
+
+function restoreIfEmpty(el) {
+  if (el.value === "") {
+    el.value = "0";
+    calculate();
+    calculateLeads();
+  }
+}
+
+function showView(id) {
+    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('view-active'));
+    document.getElementById(id).classList.add('view-active');
+    if(id === 'revenue-view') calculate();
+}
+
+function toggleTheme() {
+    const t = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', t);
+    saveData();
+}
 
 function toggleDropdown(id) {
     const el = document.getElementById(id);
@@ -286,21 +331,6 @@ function selectOption(type, value, label) {
     calculate();
 }
 
-window.onclick = (e) => { if (!e.target.closest('.custom-select-container')) document.querySelectorAll('.custom-select-container').forEach(c => c.classList.remove('active')); };
-
-function formatNumber(val) {
-  let clean = val.toString().replace(/[^0-9,]/g, "");
-  let parts = clean.split(",");
-  let int = parts[0].replace(/^0+/, "") || "0";
-  return int.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + (parts.length > 1 ? "," + parts[1] : "");
-}
-function formatShortNumber(num) {
-  if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'M';
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'Jt';
-  return num.toLocaleString('id-ID');
-}
-function cleanNumber(val) { return parseFloat(val.toString().replace(/\./g, "").replace(",", ".")) || 0; }
-
 function handleInput(el) {
   let cursor = el.selectionStart, oldLen = el.value.length;
   el.value = formatNumber(el.value);
@@ -309,7 +339,7 @@ function handleInput(el) {
 }
 
 function syncSlider(val) { document.getElementById('growthSlider').value = cleanNumber(val); calculate(); }
-function syncInput(val) { document.getElementById('optPercent').value = val; calculate(); }
+function syncInput(val) { document.getElementById('optPercent').value = formatNumber(val); calculate(); }
 
 function calculate() {
   const leads = cleanNumber(document.getElementById('leads').value);
@@ -334,58 +364,130 @@ function calculate() {
 
   const panel = document.getElementById('insightPanel');
   if (leads > 0 && parseFloat(actualConv) < convTarget) {
-      panel.innerHTML = `<b>💡 Business Insight:</b> Konversi (${actualConv}%) di bawah target (${convTarget}%). Perlu evaluasi efektivitas tim sales.`;
+      panel.innerHTML = `<b>💡 Business Insight:</b> Konversi (${actualConv}%) di bawah target (${convTarget}%).`;
       panel.style.display = 'block';
   } else { panel.style.display = 'none'; }
 
-  if (funnelChart) {
-    funnelChart.data.datasets[0].data = [leads, cust, cust * avgTx];
-    funnelChart.update();
-  }
-  if (growthChart) {
-    growthChart.data.datasets[0].data = [currentRev, optRev];
-    growthChart.update();
-  }
+  if (funnelChart) { funnelChart.data.datasets[0].data = [leads, cust, cust * avgTx]; funnelChart.update(); }
+  if (growthChart) { growthChart.data.datasets[0].data = [currentRev, optRev]; growthChart.update(); }
   saveData();
+}
+
+function handleLeadInput(el) { el.value = formatNumber(el.value); calculateLeads(); }
+function calculateLeads() {
+    const reach = cleanNumber(document.getElementById('reach').value);
+    const visits = cleanNumber(document.getElementById('visits').value);
+    const links = cleanNumber(document.getElementById('links').value);
+    const orders = cleanNumber(document.getElementById('orders').value);
+    const payments = cleanNumber(document.getElementById('payments').value);
+    const res = document.getElementById('leads-results');
+
+    if (reach > 0) {
+        const r2v = ((visits/reach)*100).toFixed(2);
+        const v2l = visits > 0 ? ((links/visits)*100).toFixed(2) : 0;
+        const l2o = links > 0 ? ((orders/links)*100).toFixed(2) : 0;
+        const o2p = orders > 0 ? ((payments/orders)*100).toFixed(2) : 0;
+        const ovr = ((payments/reach)*100).toFixed(2);
+
+        res.innerHTML = `
+            <div class="funnel-item"><span>Reach → Visit</span><span class="result-val">${r2v}%</span></div>
+            <div class="funnel-item"><span>Visit → Link</span><span class="result-val">${v2l}%</span></div>
+            <div class="funnel-item"><span>Link → Order</span><span class="result-val">${l2o}%</span></div>
+            <div class="funnel-item"><span>Order → Pay</span><span class="result-val">${o2p}%</span></div>
+            <div class="overall-row"><small>OVERALL CONV.</small><div style="font-size:32px; font-weight:900;">${ovr}%</div></div>`;
+    } else {
+        res.innerHTML = `<p style="text-align: center; color: var(--muted);">Lengkapi data di atas.</p>`;
+    }
+}
+
+function exportToExcel() {
+    const data = [
+        ["REPORT TAOBUN", `${currentMonth}/${currentYear}`],
+        ["Metric", "Value"],
+        ["Potential Leads", cleanNumber(document.getElementById('leads').value)],
+        ["Active Customers", cleanNumber(document.getElementById('totalCustInput').value)],
+        ["Basket Size", cleanNumber(document.getElementById('basketSize').value)],
+        ["Total Revenue", cleanNumber(document.getElementById('totalRevenue').textContent)],
+        ["Projected Revenue", cleanNumber(document.getElementById('projectedRevenueDisplay').textContent)]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Report");
+    XLSX.writeFile(wb, `Report_Taobun_${currentMonth}_${currentYear}.xlsx`);
+}
+
+function importFromExcel(input) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type: 'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, {header: 1});
+    };
+    reader.readAsArrayBuffer(file);
 }
 
 function initCharts() {
   funnelChart = new Chart(document.getElementById('funnelChart'), {
     type: 'bar',
     data: { labels: ['Leads', 'Users', 'Orders'], datasets: [{ data: [0,0,0], backgroundColor: ['#e9ecef', '#d61e30', '#1a1a2e'], borderRadius: 10 }] },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false}, datalabels: { display: false } }, scales: { x: {display: false}, y: {grid: {display: false}, border: {display: false}, ticks: {font: {weight: '700'}}} } }
+    options: { 
+        indexAxis: 'y', 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: {display: false},
+            datalabels: { display: false } 
+        } 
+    }
   });
-
+  
   growthChart = new Chart(document.getElementById('growthChart'), {
     type: 'bar',
     data: { labels: ['Current', 'Target'], datasets: [{ data: [0,0], backgroundColor: ['#1a1a2e', '#d61e30'], borderRadius: 12 }] },
     options: { 
-      responsive: true, maintainAspectRatio: false, layout: { padding: { top: 40 } },
-      plugins: { 
-        legend: {display: false}, 
-        datalabels: { 
-          color: '#1a1a2e', font: {weight: '800', size: 10}, anchor: 'end', align: 'top', textAlign: 'center',
-          formatter: (value, context) => {
-            if (value === 0) return '';
-            const valStr = 'Rp' + formatShortNumber(value);
-            if (context.dataIndex === 1) {
-              const current = context.chart.data.datasets[0].data[0];
-              if (current > 0) {
-                const pct = (((value - current) / current) * 100).toFixed(1);
-                return [`+${pct}%`, valStr];
-              }
+        responsive: true, 
+        maintainAspectRatio: false,
+        layout: { padding: { top: 30 } }, 
+        plugins: { 
+            legend: {display: false}, 
+            datalabels: {
+                anchor: 'end', 
+                align: 'top', 
+                offset: 5,
+                font: {weight: '800'}, 
+                formatter: (v) => 'Rp' + formatShortNumber(v)
+            } 
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) { return 'Rp' + formatShortNumber(value); }
+                }
             }
-            return valStr;
-          }
-        } 
-      },
-      scales: { y: {display: false}, x: {grid: {display: false}, border: {display: false}, ticks: {font: {weight: '700'}}} }
+        }
     }
   });
 }
 
 function saveData() {
-    const data = { l: document.getElementById('leads').value, c: document.getElementById('convTargetInput').value, t: document.getElementById('totalCustInput').value, r: document.getElementById('retentionCust').value, b: document.getElementById('basketSize').value, tx: document.getElementById('avgTx').value, o: document.getElementById('optPercent').value, theme: document.body.getAttribute('data-theme') };
+    const data = { 
+        l: document.getElementById('leads').value, 
+        c: document.getElementById('convTargetInput').value, 
+        t: document.getElementById('totalCustInput').value, 
+        r: document.getElementById('retentionCust').value, 
+        b: document.getElementById('basketSize').value, 
+        tx: document.getElementById('avgTx').value, 
+        o: document.getElementById('optPercent').value,
+        lead_reach: document.getElementById('reach').value,
+        lead_visits: document.getElementById('visits').value,
+        lead_links: document.getElementById('links').value,
+        lead_orders: document.getElementById('orders').value,
+        lead_payments: document.getElementById('payments').value,
+        theme: document.body.getAttribute('data-theme') 
+    };
     localStorage.setItem('taobun_master_final_v7', JSON.stringify(data));
 }
 
@@ -393,61 +495,64 @@ function loadData() {
     const saved = localStorage.getItem('taobun_master_final_v7');
     if (saved) {
         const d = JSON.parse(saved);
-        document.getElementById('leads').value = d.l;
-        document.getElementById('convTargetInput').value = d.c;
-        document.getElementById('totalCustInput').value = d.t;
+        document.getElementById('leads').value = d.l || "0";
+        document.getElementById('convTargetInput').value = d.c || "0";
+        document.getElementById('totalCustInput').value = d.t || "0";
         document.getElementById('retentionCust').value = d.r || "0";
-        document.getElementById('basketSize').value = d.b;
-        document.getElementById('avgTx').value = d.tx;
-        document.getElementById('optPercent').value = d.o;
-        document.getElementById('growthSlider').value = d.o;
+        document.getElementById('basketSize').value = d.b || "0";
+        document.getElementById('avgTx').value = d.tx || "0";
+        document.getElementById('optPercent').value = d.o || "0";
+        document.getElementById('reach').value = d.lead_reach || "0";
+        document.getElementById('visits').value = d.lead_visits || "0";
+        document.getElementById('links').value = d.lead_links || "0";
+        document.getElementById('orders').value = d.lead_orders || "0";
+        document.getElementById('payments').value = d.lead_payments || "0";
+        document.getElementById('growthSlider').value = cleanNumber(d.o) || 0;
         if(d.theme) document.body.setAttribute('data-theme', d.theme);
         calculate();
+        calculateLeads();
     }
 }
 
-function resetMetrics() {
-    if (confirm("Reset seluruh data?")) {
-        ['leads', 'convTargetInput', 'totalCustInput', 'retentionCust', 'basketSize', 'avgTx', 'optPercent'].forEach(id => document.getElementById(id).value = "0");
-        document.getElementById('growthSlider').value = 0;
+function resetMetrics() { 
+    if (confirm("Reset seluruh data di dashboard ini?")) { 
+        const ids = ['leads', 'convTargetInput', 'totalCustInput', 'retentionCust', 'basketSize', 'avgTx', 'optPercent'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = "0";
+        });
+        if(document.getElementById('growthSlider')) document.getElementById('growthSlider').value = "0";
+        saveData();
         calculate();
+    } 
+}
+
+function resetLeadMetrics() {
+    if (confirm("Reset data funnel di Lead Management?")) {
+        const ids = ['reach', 'visits', 'links', 'orders', 'payments'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.value = "0";
+        });
+        saveData();
+        calculateLeads();
     }
-}
-
-function toggleTheme() {
-    const t = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', t);
-    saveData();
-}
-
-function showView(id) {
-    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('view-active'));
-    document.getElementById(id).classList.add('view-active');
-}
-
-function exportToExcel() {
-    XLSX.writeFile(XLSX.utils.book_new(), `TAOBUN_${currentMonth}_${currentYear}.xlsx`);
-}
-
-function importFromExcel(input) {
-    calculate();
 }
 
 window.onload = () => {
     const yrBox = document.getElementById('yearOptions');
-    for(let i=2026; i<=2041; i++) { 
+    for(let i=2026; i<=2030; i++) { 
         let d = document.createElement('div'); d.className = 'option-item'; d.textContent = i;
         d.onclick = () => selectOption('Year', i.toString(), i.toString());
         yrBox.appendChild(d);
     }
     initCharts();
     loadData();
-    const inputs = Array.from(document.querySelectorAll('.nav-input'));
+    const inputs = Array.from(document.querySelectorAll('.nav-input, .lead-field'));
     inputs.forEach((input, index) => {
-        input.addEventListener('focus', () => input.select());
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === 'ArrowDown') { e.preventDefault(); if (inputs[index+1]) inputs[index+1].focus(); }
-            if (e.key === 'ArrowUp') { e.preventDefault(); if (inputs[index-1]) inputs[index-1].focus(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); if (inputs[index-1]) inputs[index-1].focus(); }
         });
     });
 };
